@@ -57,6 +57,11 @@
 
     <target name="clean">
         <delete dir="${build}"/>
+        <!-- Delete executables in release -->
+        <delete file="release/BEAST X v10.5.0.zip"/>
+        <delete file="release/BEAST_X_v10.5.0.tgz"/>
+        <delete dir="release/Linux/BEAST_X_v10.5.0"/>
+        <delete dir="release/Windows/BEAST X v10.5.0"/>
     </target>
 
     <!-- clean previous build, and then compile Java source code, and Juint test -->
