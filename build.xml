@@ -65,7 +65,7 @@
     </target>
 
     <!-- clean previous build, and then compile Java source code, and Juint test -->
-    <target name="test" depends="clean,compile-all,junit"
+    <target name="test" depends="clean,compile-all,junit,junitreport"
             description="Clean and Build all run-time stuff with unit test">
     </target>
 
