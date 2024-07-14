@@ -61,7 +61,7 @@ public class AncestralStatesOptionsPanel extends OptionsPanel {
             + "Suchard (2012). This model requires a 3-partition codon model to be<br>"
             + "selected in the Site model for this partition and NO Site Heterogeneity Model.</html>";
 
-    private static final String COMPLETE_HISTORY_LOGGING_TOOL_TIP = "<html>"
+    private static final String HISTORY_LOG_TOOL_TIP = "<html>"
             + "Log a complete history of realised state changes to the tree log file.<br>"
             + "This can make the files very large but can be useful for post hoc analysis.</html>";
 
@@ -132,7 +132,7 @@ public class AncestralStatesOptionsPanel extends OptionsPanel {
         dNdSRobustCountingCheck.setToolTipText(DNDS_ROBUST_COUNTING_TOOL_TIP);
 
         PanelUtils.setupComponent(completeHistoryLoggingCheck);
-        completeHistoryLoggingCheck.setToolTipText(COMPLETE_HISTORY_LOGGING_TOOL_TIP);
+        completeHistoryLoggingCheck.setToolTipText(HISTORY_LOG_TOOL_TIP);
 
         // ////////////////////////
         PanelUtils.setupComponent(errorModelCombo);
