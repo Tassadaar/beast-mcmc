@@ -194,89 +194,26 @@ public class Partition {
 	}// END: loadBeagleInstance
 
 	public void simulatePartition() {
-
 		try {
-
 			NodeRef root = treeModel.getRoot();
 
-			// gamma category rates
-			double[] categoryRates = siteRateModel.getCategoryRates();
-			beagle.setCategoryRates(categoryRates);
+			setupCategoryRatesAndProbs();
 
-			// probabilities for gamma category rates
-			double[] categoryProbs = siteRateModel.getCategoryProportions();
-//			beagle.setCategoryWeights(0, categoryProbs);
+			int[] category = generateCategoryAssignments();
 
-//			Utils.printArray(categoryRates);
-//			Utils.printArray(categoryProbs);
-
-			int[] category = new int[partitionSiteCount];
-			for (int i = 0; i < partitionSiteCount; i++) {
-
-				category[i] = randomChoicePDF(categoryProbs, partitionNumber,
-						"categories");
-
-			}
-
-//			category = new int[] {1, 0, 0, 0, 0, 1, 0, 1, 0, 0 };
-
-			if(DEBUG){
-				System.out.println("category for each site:");
-				Utils.printArray(category);
-			}//END: DEBUG
-
-			int[] parentSequence = new int[partitionSiteCount];
-
-			// set ancestral sequence for partition if it exists
-			if (hasRootSequence) {
-
-				if (rootSequence.getLength() == partitionSiteCount) {
-
-					parentSequence = sequence2intArray(rootSequence);
-
-				} else if (dataType instanceof Codons && rootSequence.getLength() == 3 * partitionSiteCount) {
-
-					parentSequence = sequence2intArray(rootSequence);
-
-				} else {
-
-					throw new RuntimeException("Ancestral sequence length of "
-							+ rootSequence.getLength()
-							+ " does not match partition site count of "
-							+ partitionSiteCount + ".");
-
-				}
-
-			} else {
-
-				double[] frequencies = freqModel.getFrequencies();
-				for (int i = 0; i < partitionSiteCount; i++) {
-
-					parentSequence[i] = randomChoicePDF(frequencies,
-							partitionNumber, "root");
-
-				}
-
-			}// END:ancestralSequence check
+			int[] parentSequence = generateParentSequence(root);
 
 			if (DEBUG) {
-				synchronized (this) {
-					System.out.println();
-					System.out.println("root Sequence:");
-					Utils.printArray(parentSequence);
-				}
-			}//END: DEBUG
+				printRootSequence(parentSequence);
+			}
 
 			substitutionModelDelegate.updateSubstitutionModels(beagle);
 
 			traverse(root, parentSequence, category);
 
 			if (DEBUG) {
-				synchronized (this) {
-					System.out.println("Simulated alignment:");
-					printSequences();
-				}
-			}//END: DEBUG
+				printSimulatedAlignment();
+			}
 
 			beagle.finalize();
 
@@ -286,8 +223,77 @@ public class Partition {
 			System.err.println("BeagleException: " + e.getMessage());
 			System.exit(-1);
 		}
+	}
 
-	}// END: simulatePartition
+	private void setupCategoryRatesAndProbs() {
+		double[] categoryRates = siteRateModel.getCategoryRates();
+		beagle.setCategoryRates(categoryRates);
+
+		double[] categoryProbs = siteRateModel.getCategoryProportions();
+		// beagle.setCategoryWeights(0, categoryProbs);
+
+		if (DEBUG) {
+			Utils.printArray(categoryRates);
+			Utils.printArray(categoryProbs);
+		}
+	}
+
+	private int[] generateCategoryAssignments() {
+		double[] categoryProbs = siteRateModel.getCategoryProportions();
+		int[] category = new int[partitionSiteCount];
+		for (int i = 0; i < partitionSiteCount; i++) {
+			category[i] = randomChoicePDF(categoryProbs, partitionNumber, "categories");
+		}
+
+		if (DEBUG) {
+			System.out.println("Category for each site:");
+			Utils.printArray(category);
+		}
+
+		return category;
+	}
+
+	private int[] generateParentSequence(NodeRef root) {
+		int[] parentSequence = new int[partitionSiteCount];
+
+		if (hasRootSequence) {
+			parentSequence = handleRootSequence();
+		} else {
+			double[] frequencies = freqModel.getFrequencies();
+			for (int i = 0; i < partitionSiteCount; i++) {
+				parentSequence[i] = randomChoicePDF(frequencies, partitionNumber, "root");
+			}
+		}
+
+		return parentSequence;
+	}
+
+	private int[] handleRootSequence() {
+		int[] parentSequence;
+		if (rootSequence.getLength() == partitionSiteCount ||
+				(dataType instanceof Codons && rootSequence.getLength() == 3 * partitionSiteCount)) {
+			parentSequence = sequence2intArray(rootSequence);
+		} else {
+			throw new RuntimeException("Ancestral sequence length of " + rootSequence.getLength() +
+					" does not match partition site count of " + partitionSiteCount + ".");
+		}
+		return parentSequence;
+	}
+
+	private void printRootSequence(int[] parentSequence) {
+		synchronized (this) {
+			System.out.println();
+			System.out.println("Root Sequence:");
+			Utils.printArray(parentSequence);
+		}
+	}
+
+	private void printSimulatedAlignment() {
+		synchronized (this) {
+			System.out.println("Simulated alignment:");
+			printSequences();
+		}
+	}
 
 	private void traverse(NodeRef node, //
 						  int[] parentSequence, //
